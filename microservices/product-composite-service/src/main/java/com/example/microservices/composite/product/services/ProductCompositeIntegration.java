@@ -1,4 +1,4 @@
-package com.example.productcompositeservice.services;
+package com.example.microservices.composite.product.services;
 
 import com.example.api.core.product.Product;
 import com.example.api.core.product.ProductService;

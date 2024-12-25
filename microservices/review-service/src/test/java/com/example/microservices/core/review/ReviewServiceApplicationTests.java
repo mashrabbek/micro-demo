@@ -1,4 +1,4 @@
-package com.example.reviewservice;
+package com.example.microservices.core.review;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;

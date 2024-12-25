@@ -1,4 +1,4 @@
-package com.example.reviewservice.services;
+package com.example.microservices.core.review.services;
 
 import com.example.api.core.review.Review;
 import com.example.api.core.review.ReviewService;

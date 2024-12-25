@@ -1,11 +1,11 @@
-package com.example.productcompositeservice;
+package com.example.microservices.composite.product;
 
 import com.example.api.core.product.Product;
 import com.example.api.core.recommendation.Recommendation;
 import com.example.api.core.review.Review;
 import com.example.api.exceptions.InvalidInputException;
 import com.example.api.exceptions.NotFoundException;
-import com.example.productcompositeservice.services.ProductCompositeIntegration;
+import com.example.microservices.composite.product.services.ProductCompositeIntegration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

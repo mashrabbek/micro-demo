@@ -1,4 +1,4 @@
-package com.example.recommendationservice.services;
+package com.example.microservices.core.recommendation.services;
 
 import com.example.api.core.recommendation.Recommendation;
 import com.example.api.core.recommendation.RecommendationService;

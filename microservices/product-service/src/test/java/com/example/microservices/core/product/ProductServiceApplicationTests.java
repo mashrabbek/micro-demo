@@ -1,4 +1,4 @@
-package com.example.productservice;
+package com.example.microservices.core.product;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
