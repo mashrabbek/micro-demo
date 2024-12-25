@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: recommendation-service
+
+server:
+    port: 7002
+    error:
+      include-message: always
+
+
+
+---
+spring.config.activate.on-profile: docker
+server.port: 8080
