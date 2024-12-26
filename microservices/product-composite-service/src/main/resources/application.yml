@@ -1,6 +1,5 @@
 spring.application.name: product-composite-service
 
-
 logging:
   level:
     org.springdoc: DEBUG
@@ -8,7 +7,7 @@ logging:
 springdoc:
   swagger-ui.path: /openapi/swagger-ui.html
   api-docs.path: /openapi/v3/api-docs
-  packagesToScan: com.example.*
+  packagesToScan: com.example.microservices.composite.product
   pathsToMatch: /**
 
 api:
@@ -81,7 +80,6 @@ app:
     port: 7003
 
 ---
-
 spring.config.activate.on-profile: docker
 
 server.port: 8080
