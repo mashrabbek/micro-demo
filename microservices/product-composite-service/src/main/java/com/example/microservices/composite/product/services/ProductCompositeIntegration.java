@@ -26,7 +26,6 @@ import java.util.List;
 
 import static org.springframework.http.HttpMethod.GET;
 
-
 @Component
 public class ProductCompositeIntegration implements ProductService, ReviewService, RecommendationService {
 

@@ -3,7 +3,7 @@ spring:
       name: review-service
 
 server:
-    port: 8080
+    port: 7003
     error:
       include-message: always
 
