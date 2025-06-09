@@ -14,17 +14,17 @@ springdoc:
 api:
   common:
     version: 1.0.0
-    title: Sample API
-    description: Description of the API...
+    title: Product Composite Service API
+    description: API documentation for Product Composite Service
     termsOfService: MY TERMS OF SERVICE
-    license: MY LICENSE
+    license: MIT LICENSE
     licenseUrl: MY LICENSE URL
     externalDocDesc: MY WIKI PAGE
     externalDocUrl: MY WIKI URL
     contact:
-      name: NAME OF CONTACT
+      name: Mashrabbek Akbarov
       url: URL TO CONTACT
-      email: contact@mail.com
+      email: mashrabbek@example.com
   responseCodes:
     ok:
       description: OK

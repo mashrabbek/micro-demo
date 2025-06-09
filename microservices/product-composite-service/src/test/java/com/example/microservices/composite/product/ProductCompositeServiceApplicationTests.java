@@ -1,5 +1,8 @@
 package com.example.microservices.composite.product;
 
+import com.example.api.composite.product.ProductAggregate;
+import com.example.api.composite.product.RecommendationSummary;
+import com.example.api.composite.product.ReviewSummary;
 import com.example.api.core.product.Product;
 import com.example.api.core.recommendation.Recommendation;
 import com.example.api.core.review.Review;
@@ -9,8 +12,6 @@ import com.example.microservices.composite.product.services.ProductCompositeInte
 
 import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.when;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -22,8 +23,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.ResultMatcher;
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
+
+@SpringBootTest
 @AutoConfigureMockMvc
 class ProductCompositeServiceApplicationTests {
 
@@ -33,13 +38,14 @@ class ProductCompositeServiceApplicationTests {
 
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockBean
     private ProductCompositeIntegration compositeIntegration;
 
     @BeforeEach
     void setUp() {
-
         when(compositeIntegration.getProduct(PRODUCT_ID_OK))
                 .thenReturn(new Product(PRODUCT_ID_OK, "name", 1, "mock-address"));
         when(compositeIntegration.getRecommendations(PRODUCT_ID_OK))
@@ -55,13 +61,44 @@ class ProductCompositeServiceApplicationTests {
     }
 
     @Test
-    void contextLoads() {}
+    void contextLoads() {
+    }
+
+    @Test
+    void createCompositeProduct1() throws Exception {
+        ProductAggregate compositeProduct = new ProductAggregate(1, "name", 1, null, null, null);
+        postAndVerifyProduct(compositeProduct, status().isOk());
+    }
+
+    @Test
+    void createCompositeProduct2() throws Exception {
+        ProductAggregate compositeProduct = new ProductAggregate(
+                1, "name", 1,
+                singletonList(new RecommendationSummary(1, "a", 1, "c")),
+                singletonList(new ReviewSummary(1, "a", "s", "c")), null
+        );
+        postAndVerifyProduct(compositeProduct, status().isOk());
+    }
+
+    @Test
+    void deleteCompositeProduct() throws Exception {
+        ProductAggregate compositeProduct = new ProductAggregate(
+                1, "name", 1,
+                singletonList(new RecommendationSummary(1, "a", 1, "c")),
+                singletonList(new ReviewSummary(1, "a", "s", "c")), null
+        );
+
+        postAndVerifyProduct(compositeProduct, status().isOk());
+        deleteAndVerifyProduct(compositeProduct.getProductId(), status().isOk());
+        deleteAndVerifyProduct(compositeProduct.getProductId(), status().isOk());
+    }
+
     @Test
     void getProductById() throws Exception {
         mockMvc.perform(get("/product-composite/" + PRODUCT_ID_OK)
-                        .accept(APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Type", APPLICATION_JSON.toString()))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.productId").value(PRODUCT_ID_OK))
                 .andExpect(jsonPath("$.recommendations.length()").value(1))
                 .andExpect(jsonPath("$.reviews.length()").value(1));
@@ -70,9 +107,8 @@ class ProductCompositeServiceApplicationTests {
     @Test
     void getProductNotFound() throws Exception {
         mockMvc.perform(get("/product-composite/" + PRODUCT_ID_NOT_FOUND)
-                        .accept(APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(header().string("Content-Type", APPLICATION_JSON.toString()))
                 .andExpect(jsonPath("$.path").value("/product-composite/" + PRODUCT_ID_NOT_FOUND))
                 .andExpect(jsonPath("$.message").value("NOT FOUND: " + PRODUCT_ID_NOT_FOUND));
     }
@@ -80,10 +116,21 @@ class ProductCompositeServiceApplicationTests {
     @Test
     void getProductInvalidInput() throws Exception {
         mockMvc.perform(get("/product-composite/" + PRODUCT_ID_INVALID)
-                        .accept(APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(header().string("Content-Type", APPLICATION_JSON.toString()))
                 .andExpect(jsonPath("$.path").value("/product-composite/" + PRODUCT_ID_INVALID))
                 .andExpect(jsonPath("$.message").value("INVALID: " + PRODUCT_ID_INVALID));
+    }
+
+    private void postAndVerifyProduct(ProductAggregate compositeProduct, ResultMatcher expectedStatus) throws Exception {
+        mockMvc.perform(post("/product-composite")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(compositeProduct)))
+                .andExpect(expectedStatus);
+    }
+
+    private void deleteAndVerifyProduct(int productId, ResultMatcher expectedStatus) throws Exception {
+        mockMvc.perform(delete("/product-composite/" + productId))
+                .andExpect(expectedStatus);
     }
 }
