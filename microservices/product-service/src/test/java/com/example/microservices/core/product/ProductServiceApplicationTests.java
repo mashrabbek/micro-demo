@@ -21,8 +21,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-
-@SpringBootTest(webEnvironment = RANDOM_PORT)
+@SpringBootTest(webEnvironment = RANDOM_PORT, properties = { "eureka.client.enabled=false" })
 @AutoConfigureMockMvc
 class ProductServiceApplicationTests extends MongoDbTestBase {
 
@@ -32,7 +31,6 @@ class ProductServiceApplicationTests extends MongoDbTestBase {
     private ProductRepository repository;
     @Autowired
     private ObjectMapper objectMapper;
-
 
     @BeforeEach
     void setupDb() {
@@ -81,12 +79,11 @@ class ProductServiceApplicationTests extends MongoDbTestBase {
         String invalidId = "no-integer";
 
         mockMvc.perform(get("/product/{id}", invalidId)
-                        .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.path", is("/product/" + invalidId)));
-        //.andExpect(jsonPath("$.message", is("Type mismatch.")));
+        // .andExpect(jsonPath("$.message", is("Type mismatch.")));
     }
-
 
     @Test
     void getProductNotFound() throws Exception {
@@ -114,7 +111,7 @@ class ProductServiceApplicationTests extends MongoDbTestBase {
 
     private ResultActions getAndVerifyProduct(String productIdPath, ResultMatcher expectedStatus) throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders.get("/product" + productIdPath)
-                        .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(expectedStatus)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
@@ -122,16 +119,16 @@ class ProductServiceApplicationTests extends MongoDbTestBase {
     private ResultActions postAndVerifyProduct(int productId, ResultMatcher expectedStatus) throws Exception {
         Product product = new Product(productId, "Name " + productId, productId, "SA");
         return mockMvc.perform(MockMvcRequestBuilders.post("/product")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(product))
-                        .accept(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(product))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(expectedStatus)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     private void deleteAndVerifyProduct(int productId, ResultMatcher expectedStatus) throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete("/product/{id}", productId)
-                        .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(expectedStatus);
     }
 }

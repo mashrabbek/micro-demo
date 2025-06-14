@@ -21,7 +21,7 @@ import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 @SpringBootApplication
 @ComponentScan("com.example")
 public class RecommendationServiceApplication {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(RecommendationServiceApplication.class);
 
     public static void main(String[] args) {
@@ -41,7 +41,7 @@ public class RecommendationServiceApplication {
         IndexResolver resolver = new MongoPersistentEntityIndexResolver(mappingContext);
 
         IndexOperations indexOps = mongoTemplate.indexOps(RecommendationEntity.class);
-        resolver.resolveIndexFor(RecommendationEntity.class).forEach(e -> indexOps.ensureIndex(e));
+        resolver.resolveIndexFor(RecommendationEntity.class).forEach(e -> indexOps.createIndex(e));
     }
 
 }

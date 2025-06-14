@@ -42,14 +42,16 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
 
             if (body.getRecommendations() != null) {
                 body.getRecommendations().forEach(r -> {
-                    Recommendation recommendation = new Recommendation(body.getProductId(), r.getRecommendationId(), r.getAuthor(), r.getRate(), r.getContent(), null);
+                    Recommendation recommendation = new Recommendation(body.getProductId(), r.getRecommendationId(),
+                            r.getAuthor(), r.getRate(), r.getContent(), null);
                     integration.createRecommendation(recommendation);
                 });
             }
 
             if (body.getReviews() != null) {
                 body.getReviews().forEach(r -> {
-                    Review review = new Review(body.getProductId(), r.getReviewId(), r.getAuthor(), r.getSubject(), r.getContent(), null);
+                    Review review = new Review(body.getProductId(), r.getReviewId(), r.getAuthor(), r.getSubject(),
+                            r.getContent(), null);
                     integration.createReview(review);
                 });
             }
@@ -61,7 +63,6 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
             throw re;
         }
     }
-
 
     @Override
     public ProductAggregate getProduct(int productId) {
@@ -108,23 +109,28 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
         int weight = product.getWeight();
 
         // 2. Copy summary recommendation info, if available
-        List<RecommendationSummary> recommendationSummaries = (recommendations == null) ? null :
-                recommendations.stream()
-                        .map(r -> new RecommendationSummary(r.getRecommendationId(), r.getAuthor(), r.getRate(), r.getContent()))
+        List<RecommendationSummary> recommendationSummaries = (recommendations == null) ? null
+                : recommendations.stream()
+                        .map(r -> new RecommendationSummary(r.getRecommendationId(), r.getAuthor(), r.getRate(),
+                                r.getContent()))
                         .collect(Collectors.toList());
 
         // 3. Copy summary review info, if available
-        List<ReviewSummary> reviewSummaries = (reviews == null) ? null :
-                reviews.stream()
+        List<ReviewSummary> reviewSummaries = (reviews == null) ? null
+                : reviews.stream()
                         .map(r -> new ReviewSummary(r.getReviewId(), r.getAuthor(), r.getSubject(), r.getContent()))
                         .collect(Collectors.toList());
 
         // 4. Create info regarding the involved microservices addresses
         String productAddress = product.getServiceAddress();
         String reviewAddress = (reviews != null && reviews.size() > 0) ? reviews.get(0).getServiceAddress() : "";
-        String recommendationAddress = (recommendations != null && recommendations.size() > 0) ? recommendations.get(0).getServiceAddress() : "";
-        ServiceAddresses serviceAddresses = new ServiceAddresses(serviceAddress, productAddress, reviewAddress, recommendationAddress);
+        String recommendationAddress = (recommendations != null && recommendations.size() > 0)
+                ? recommendations.get(0).getServiceAddress()
+                : "";
+        ServiceAddresses serviceAddresses = new ServiceAddresses(serviceAddress, productAddress, reviewAddress,
+                recommendationAddress);
 
-        return new ProductAggregate(productId, name, weight, recommendationSummaries, reviewSummaries, serviceAddresses);
+        return new ProductAggregate(productId, name, weight, recommendationSummaries, reviewSummaries,
+                serviceAddresses);
     }
 }

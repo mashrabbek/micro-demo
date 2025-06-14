@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -35,34 +34,23 @@ public class ProductCompositeIntegration implements ProductService, ReviewServic
     private final RestTemplate restTemplate;
     private final ObjectMapper mapper;
 
-    private final String productServiceUrl;
-    private final String recommendationServiceUrl;
-    private final String reviewServiceUrl;
+    private static final String PRODUCT_SERVICE_URL = "http://product";
+    private static final String RECOMMENDATION_SERVICE_URL = "http://recommendation";
+    private static final String REVIEW_SERVICE_URL = "http://review";
 
     @Autowired
     public ProductCompositeIntegration(
             RestTemplate restTemplate,
-            ObjectMapper mapper,
-            @Value("${app.product-service.host}") String productServiceHost,
-            @Value("${app.product-service.port}") int productServicePort,
-            @Value("${app.recommendation-service.host}") String recommendationServiceHost,
-            @Value("${app.recommendation-service.port}") int recommendationServicePort,
-            @Value("${app.review-service.host}") String reviewServiceHost,
-            @Value("${app.review-service.port}") int reviewServicePort) {
-
+            ObjectMapper mapper) {
         this.restTemplate = restTemplate;
         this.mapper = mapper;
-
-        productServiceUrl = "http://" + productServiceHost + ":" + productServicePort + "/product";
-        recommendationServiceUrl = "http://" + recommendationServiceHost + ":" + recommendationServicePort + "/recommendation";
-        reviewServiceUrl = "http://" + reviewServiceHost + ":" + reviewServicePort + "/review";
     }
 
     @Override
     public Product createProduct(Product body) {
 
         try {
-            String url = productServiceUrl;
+            String url = PRODUCT_SERVICE_URL + "/product";
             LOG.debug("Will post a new product to URL: {}", url);
 
             Product product = restTemplate.postForObject(url, body, Product.class);
@@ -79,7 +67,7 @@ public class ProductCompositeIntegration implements ProductService, ReviewServic
     public Product getProduct(int productId) {
 
         try {
-            String url = productServiceUrl + "/" + productId;
+            String url = PRODUCT_SERVICE_URL + "/product/" + productId;
             LOG.debug("Will call the getProduct API on URL: {}", url);
 
             Product product = restTemplate.getForObject(url, Product.class);
@@ -95,7 +83,7 @@ public class ProductCompositeIntegration implements ProductService, ReviewServic
     @Override
     public void deleteProduct(int productId) {
         try {
-            String url = productServiceUrl + "/" + productId;
+            String url = PRODUCT_SERVICE_URL + "/product/" + productId;
             LOG.debug("Will call the deleteProduct API on URL: {}", url);
 
             restTemplate.delete(url);
@@ -109,7 +97,7 @@ public class ProductCompositeIntegration implements ProductService, ReviewServic
     public Recommendation createRecommendation(Recommendation body) {
 
         try {
-            String url = recommendationServiceUrl;
+            String url = RECOMMENDATION_SERVICE_URL + "/recommendation";
             LOG.debug("Will post a new recommendation to URL: {}", url);
 
             Recommendation recommendation = restTemplate.postForObject(url, body, Recommendation.class);
@@ -126,7 +114,7 @@ public class ProductCompositeIntegration implements ProductService, ReviewServic
     public List<Recommendation> getRecommendations(int productId) {
 
         try {
-            String url = recommendationServiceUrl + "?productId=" + productId;
+            String url = RECOMMENDATION_SERVICE_URL + "/recommendation?productId=" + productId;
 
             LOG.debug("Will call the getRecommendations API on URL: {}", url);
             List<Recommendation> recommendations = restTemplate
@@ -138,7 +126,8 @@ public class ProductCompositeIntegration implements ProductService, ReviewServic
             return recommendations;
 
         } catch (Exception ex) {
-            LOG.warn("Got an exception while requesting recommendations, return zero recommendations: {}", ex.getMessage());
+            LOG.warn("Got an exception while requesting recommendations, return zero recommendations: {}",
+                    ex.getMessage());
             return new ArrayList<>();
         }
     }
@@ -146,7 +135,9 @@ public class ProductCompositeIntegration implements ProductService, ReviewServic
     @Override
     public void deleteRecommendations(int productId) {
         try {
-            String url = recommendationServiceUrl + "?productId=" + productId;
+
+            String url = RECOMMENDATION_SERVICE_URL + "/recommendation?productId=" + productId;
+
             LOG.debug("Will call the deleteRecommendations API on URL: {}", url);
 
             restTemplate.delete(url);
@@ -160,7 +151,8 @@ public class ProductCompositeIntegration implements ProductService, ReviewServic
     public Review createReview(Review body) {
 
         try {
-            String url = reviewServiceUrl;
+            String url = REVIEW_SERVICE_URL + "/review";
+
             LOG.debug("Will post a new review to URL: {}", url);
 
             Review review = restTemplate.postForObject(url, body, Review.class);
@@ -177,7 +169,7 @@ public class ProductCompositeIntegration implements ProductService, ReviewServic
     public List<Review> getReviews(int productId) {
 
         try {
-            String url = reviewServiceUrl + "?productId=" + productId;
+            String url = REVIEW_SERVICE_URL + "/review?productId=" + productId;
 
             LOG.debug("Will call the getReviews API on URL: {}", url);
             List<Review> reviews = restTemplate
@@ -197,7 +189,7 @@ public class ProductCompositeIntegration implements ProductService, ReviewServic
     @Override
     public void deleteReviews(int productId) {
         try {
-            String url = reviewServiceUrl + "?productId=" + productId;
+            String url = REVIEW_SERVICE_URL + "/review?productId=" + productId;
             LOG.debug("Will call the deleteReviews API on URL: {}", url);
 
             restTemplate.delete(url);

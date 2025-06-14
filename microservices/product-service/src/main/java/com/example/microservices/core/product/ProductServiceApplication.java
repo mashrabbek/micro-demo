@@ -40,6 +40,6 @@ public class ProductServiceApplication {
         IndexResolver resolver = new MongoPersistentEntityIndexResolver(mappingContext);
 
         IndexOperations indexOps = mongoTemplate.indexOps(ProductEntity.class);
-        resolver.resolveIndexFor(ProductEntity.class).forEach(e -> indexOps.ensureIndex(e));
+        resolver.resolveIndexFor(ProductEntity.class).forEach(e -> indexOps.createIndex(e));
     }
 }

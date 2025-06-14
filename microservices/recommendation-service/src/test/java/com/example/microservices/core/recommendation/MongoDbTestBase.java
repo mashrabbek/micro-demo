@@ -13,7 +13,7 @@ public abstract class MongoDbTestBase {
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.mongodb.host", database::getContainerIpAddress);
+        registry.add("spring.data.mongodb.host", database::getHost);
         registry.add("spring.data.mongodb.port", () -> database.getMappedPort(27017));
         registry.add("spring.data.mongodb.database", () -> "test");
     }

@@ -16,15 +16,19 @@ repositories {
     mavenCentral()
 }
 ext {
-    springBootVersion = '3.2.3'
+    springBootVersion = '3.5.0'
+    springdocVersion = '2.8.0'
+    lombokVersion = '1.18.36'
 }
 
 dependencies {
     implementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    implementation 'org.projectlombok:lombok:1.18.36'
-    implementation 'org.springdoc:springdoc-openapi-starter-common:2.3.0'
-    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation "org.springdoc:springdoc-openapi-starter-common:${springdocVersion}"
+
+    implementation "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
