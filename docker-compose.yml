@@ -2,8 +2,6 @@ services:
   eureka:
     build: spring-cloud/eureka-server
     mem_limit: 512m
-    ports:
-      - "8761:8761"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
       interval: 5s
@@ -51,8 +49,7 @@ services:
     depends_on:
       eureka:
         condition: service_healthy
-    ports:
-      - "8080:8080"
+
   mongodb:
     image: mongo:6.0.4
     mem_limit: 512m
@@ -80,6 +77,17 @@ services:
       interval: 5s
       timeout: 2s
       retries: 60
+
+  gateway:
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    build: spring-cloud/gateway
+    mem_limit: 512m
+    ports:
+      - "8080:8080"
+    depends_on:
+      eureka:
+        condition: service_healthy
 
 networks:
   microservices-network:
