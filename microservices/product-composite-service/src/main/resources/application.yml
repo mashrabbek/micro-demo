@@ -2,14 +2,32 @@ spring.application.name: product-composite
 
 logging:
   level:
+    root: INFO
+    com.com.example: DEBUG
     org.springdoc: DEBUG
-
+    org.springframework.web.server.adapter.HttpWebHandlerAdapter: TRACE
+    org.springframework.security: DEBUG
+    
 springdoc:
-  swagger-ui.path: /openapi/swagger-ui.html
   api-docs:
     path: /openapi/v3/api-docs
   packagesToScan: com.example.microservices.composite.product
   pathsToMatch: /**
+  cache.disabled: true
+
+  swagger-ui:
+    path: /openapi/swagger-ui.html
+    oauth2-redirect-url: /swagger-ui/oauth2-redirect.html
+    oauth:
+      clientId: writer
+      clientSecret: secret-writer
+      useBasicAuthenticationWithAccessCodeGrant: true
+    oAuthFlow:
+      authorizationUrl: https://localhost:8443/oauth2/authorize
+      tokenUrl: https://localhost:8443/oauth2/token
+
+server.forward-headers-strategy: framework
+
 
 api:
   common:
@@ -69,12 +87,16 @@ server:
   error:
     include-message: always
 
-app.eureka-server: localhost
+app:
+  eureka-username: u
+  eureka-password: p
+  eureka-server: localhost
+  auth-server: localhost
 
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://${app.eureka-server}:8761/eureka/
+      defaultZone: "http://${app.eureka-username}:${app.eureka-password}@${app.eureka-server}:8761/eureka/"
     initialInstanceInfoReplicationIntervalSeconds: 5
     registryFetchIntervalSeconds: 5
     registerWithEureka: true
@@ -83,10 +105,19 @@ eureka:
     leaseRenewalIntervalInSeconds: 5
     leaseExpirationDurationInSeconds: 5
 
+spring.security.oauth2.resourceserver.jwt.issuer-uri: http://${app.auth-server}:9999
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+
 management.endpoint.health.show-details: "ALWAYS"
 management.endpoints.web.exposure.include: "*"
 ---
 spring.config.activate.on-profile: docker
 
 server.port: 8080
-app.eureka-server: eureka
+
+app:
+  eureka-server: eureka
+  auth-server: auth-server

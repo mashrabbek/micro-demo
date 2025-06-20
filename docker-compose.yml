@@ -2,11 +2,6 @@ services:
   eureka:
     build: spring-cloud/eureka-server
     mem_limit: 512m
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
-      interval: 5s
-      timeout: 2s
-      retries: 60
 
   product:
     build: microservices/product-service
@@ -14,10 +9,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
-      mongodb:
-        condition: service_healthy
-      eureka:
-        condition: service_healthy
+      - mongodb
+      - eureka
 
   recommendation:
     build: microservices/recommendation-service
@@ -25,10 +18,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
-      mongodb:
-        condition: service_healthy
-      eureka:
-        condition: service_healthy
+      - mongodb
+      - eureka
 
   review:
     build: microservices/review-service
@@ -36,10 +27,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
-      mysql:
-        condition: service_healthy
-      eureka:
-        condition: service_healthy
+      - mysql
+      - eureka
 
   product-composite:
     build: microservices/product-composite-service
@@ -47,8 +36,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
-      eureka:
-        condition: service_healthy
+      - eureka
 
   mongodb:
     image: mongo:6.0.4
@@ -84,11 +72,15 @@ services:
     build: spring-cloud/gateway
     mem_limit: 512m
     ports:
-      - "8080:8080"
+      - "8443:8443"
     depends_on:
-      eureka:
-        condition: service_healthy
+      - eureka
+      - auth-server
 
-networks:
-  microservices-network:
-    driver: bridge
+  auth-server:
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    build: spring-cloud/authorization-server
+    mem_limit: 512m
+    depends_on:
+      - eureka

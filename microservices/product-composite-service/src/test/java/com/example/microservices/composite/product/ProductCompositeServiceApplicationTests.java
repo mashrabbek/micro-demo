@@ -29,13 +29,22 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 
-@SpringBootTest(webEnvironment = RANDOM_PORT, properties = {"eureka.client.enabled=false"})
 @AutoConfigureMockMvc
+@SpringBootTest(
+        webEnvironment = RANDOM_PORT,
+        properties = {
+                "spring.profiles.active=test",
+                "spring.security.oauth2.resourceserver.jwt.issuer-uri=",
+                "spring.main.allow-bean-definition-overriding=true",
+                "eureka.client.enabled=false"},
+        classes = {TestSecurityConfig.class}
+)
 class ProductCompositeServiceApplicationTests {
 
     private static final int PRODUCT_ID_OK = 1;
     private static final int PRODUCT_ID_NOT_FOUND = 2;
     private static final int PRODUCT_ID_INVALID = 3;
+
 
     @Autowired
     private MockMvc mockMvc;
@@ -60,6 +69,7 @@ class ProductCompositeServiceApplicationTests {
         when(compositeIntegration.getProduct(PRODUCT_ID_INVALID))
                 .thenThrow(new InvalidInputException("INVALID: " + PRODUCT_ID_INVALID));
     }
+
 
     @Test
     void contextLoads() {
@@ -134,4 +144,5 @@ class ProductCompositeServiceApplicationTests {
         mockMvc.perform(delete("/product-composite/" + productId))
                 .andExpect(expectedStatus);
     }
+
 }
