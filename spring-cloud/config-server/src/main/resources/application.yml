@@ -1,0 +1,52 @@
+server:
+  port: 8888
+
+app:
+  eureka-server: localhost
+
+spring:
+  application:
+    name: config
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/mashrabbek/config-server
+          clone-on-start: true
+          default-label: main
+          search-paths:
+            - '{application}'
+            - '{application}/{profile}'
+            - 'shared'
+          username: ${GIT_USERNAME}
+          password: ${GIT_TOKEN}
+          skip-ssl-validation: false
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: "http://${app.eureka-server}:8761/eureka/"
+    initialInstanceInfoReplicationIntervalSeconds: 5
+    registryFetchIntervalSeconds: 5
+  instance:
+    leaseRenewalIntervalInSeconds: 5
+    leaseExpirationDurationInSeconds: 5
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh,env
+
+logging:
+  level:
+    org.springframework.cloud.config: DEBUG
+    root: INFO
+
+---
+spring.config.activate.on-profile: docker
+
+app:
+  eureka-server: eureka

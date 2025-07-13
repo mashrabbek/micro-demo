@@ -1,66 +1,40 @@
 package com.example.microservices.composite.product.config;
 
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
-import io.swagger.v3.oas.annotations.security.OAuthFlow;
-import io.swagger.v3.oas.annotations.security.OAuthFlows;
-import io.swagger.v3.oas.annotations.security.OAuthScope;
-import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.*;
 import org.springframework.beans.factory.annotation.Value;
 
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@SecurityScheme(
-        name = "security_auth", type = SecuritySchemeType.OAUTH2,
-        flows = @OAuthFlows(
-                authorizationCode = @OAuthFlow(
-                        authorizationUrl = "${springdoc.oAuthFlow.authorizationUrl}",
-                        tokenUrl = "${springdoc.oAuthFlow.tokenUrl}",
-                        scopes = {
-                                @OAuthScope(name = "product:read", description = "read scope"),
-                                @OAuthScope(name = "product:write", description = "write scope")
-                        }
-                )
-        )
-)
+@RefreshScope
 public class SpringDocConfig {
 
-    @Value("${api.common.version}")
+    @Value("${api.common.version:v1}")
     String apiVersion;
-    @Value("${api.common.title}")
+    @Value("${api.common.title:Product Composite Service API}")
     String apiTitle;
-    @Value("${api.common.description}")
+    @Value("${api.common.description:This is the Product Composite Service API}")
     String apiDescription;
-    @Value("${api.common.termsOfService}")
+    @Value("${api.common.termsOfService:https://example.com/terms}")
     String apiTermsOfService;
-    @Value("${api.common.license}")
+    @Value("${api.common.license:Apache 2.0}")
     String apiLicense;
-    @Value("${api.common.licenseUrl}")
+    @Value("${api.common.licenseUrl:https://www.apache.org/licenses/LICENSE-2.0}")
     String apiLicenseUrl;
-    @Value("${api.common.externalDocDesc}")
+    @Value("${api.common.externalDocDesc:Documentation for Product Composite Service API}")
     String apiExternalDocDesc;
-    @Value("${api.common.externalDocUrl}")
+    @Value("${api.common.externalDocUrl:https://example.com/docs/product-composite}")
     String apiExternalDocUrl;
-    @Value("${api.common.contact.name}")
+    @Value("${api.common.contact.name:Product Composite Service Team}")
     String apiContactName;
-    @Value("${api.common.contact.url}")
+    @Value("${api.common.contact.url:https://example.com/contact}")
     String apiContactUrl;
-    @Value("${api.common.contact.email}")
+    @Value("${api.common.contact.email:bYvH6@example.com}")
     String apiContactEmail;
-
-    // @Bean
-    // public OpenAPI customOpenAPI() {
-    // return new OpenAPI()
-    // .info(new Info()
-    // .title("Product Composite Service API")
-    // .version("1.0")
-    // .description("API documentation for Product Composite Service")
-    // .contact(new Contact().name("Mashrabbek").email("mashrabbek@example.com")));
-    // }
 
     /**
      * Will exposed on $HOST:$PORT/swagger-ui.html
