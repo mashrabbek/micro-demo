@@ -24,6 +24,9 @@ ext {
 dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
     implementation 'org.glassfish.jaxb:jaxb-runtime'
+    implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+    implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
+    implementation 'org.springframework.retry:spring-retry'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

@@ -123,6 +123,15 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
 
+  zipkin-server:
+    image: openzipkin/zipkin:2.24.0
+    restart: always
+    mem_limit: 1024m
+    environment:
+      - STORAGE_TYPE=mem
+    ports:
+      - 9411:9411
+
 networks:
   app-network:
     driver: bridge
