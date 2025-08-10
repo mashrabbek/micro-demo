@@ -63,7 +63,7 @@ public class ProductCompositeIntegration implements ProductService, ReviewServic
         }
     }
 
-    @Override
+
     public Product getProduct(int productId) {
 
         try {

@@ -6,12 +6,18 @@ import com.example.api.core.recommendation.Recommendation;
 import com.example.api.core.review.Review;
 import com.example.api.exceptions.NotFoundException;
 import com.example.util.http.ServiceUtil;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @RestController
@@ -31,70 +37,82 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
     }
 
     @Override
-    public void createProduct(ProductAggregate body) {
+    public CompletableFuture<ResponseEntity<Void>> createProduct(ProductAggregate body) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
 
-        try {
+                LOG.debug("createCompositeProduct: creates a new composite entity for productId: {}", body.getProductId());
 
-            LOG.debug("createCompositeProduct: creates a new composite entity for productId: {}", body.getProductId());
+                Product product = new Product(body.getProductId(), body.getName(), body.getWeight(), null);
+                integration.createProduct(product);
 
-            Product product = new Product(body.getProductId(), body.getName(), body.getWeight(), null);
-            integration.createProduct(product);
+                if (body.getRecommendations() != null) {
+                    body.getRecommendations().forEach(r -> {
+                        Recommendation recommendation = new Recommendation(body.getProductId(), r.getRecommendationId(),
+                                r.getAuthor(), r.getRate(), r.getContent(), null);
+                        integration.createRecommendation(recommendation);
+                    });
+                }
 
-            if (body.getRecommendations() != null) {
-                body.getRecommendations().forEach(r -> {
-                    Recommendation recommendation = new Recommendation(body.getProductId(), r.getRecommendationId(),
-                            r.getAuthor(), r.getRate(), r.getContent(), null);
-                    integration.createRecommendation(recommendation);
-                });
+                if (body.getReviews() != null) {
+                    body.getReviews().forEach(r -> {
+                        Review review = new Review(body.getProductId(), r.getReviewId(), r.getAuthor(), r.getSubject(),
+                                r.getContent(), null);
+                        integration.createReview(review);
+                    });
+                }
+
+                LOG.debug("createCompositeProduct: composite entities created for productId: {}", body.getProductId());
+
+                return null;
+            } catch (RuntimeException re) {
+                LOG.warn("createCompositeProduct failed", re);
+                throw re;
             }
-
-            if (body.getReviews() != null) {
-                body.getReviews().forEach(r -> {
-                    Review review = new Review(body.getProductId(), r.getReviewId(), r.getAuthor(), r.getSubject(),
-                            r.getContent(), null);
-                    integration.createReview(review);
-                });
-            }
-
-            LOG.debug("createCompositeProduct: composite entities created for productId: {}", body.getProductId());
-
-        } catch (RuntimeException re) {
-            LOG.warn("createCompositeProduct failed", re);
-            throw re;
-        }
+        }).thenApply(ignored -> ResponseEntity.ok(null));
     }
 
     @Override
-    public ProductAggregate getProduct(int productId) {
+    @Retry(name = "product")
+    @TimeLimiter(name = "product")
+    @CircuitBreaker(name = "product", fallbackMethod = "getProductFallbackValue")
+    public CompletableFuture<ResponseEntity<ProductAggregate>> getProduct(int productId) {
+        return CompletableFuture.supplyAsync(() -> {
 
-        LOG.debug("getCompositeProduct: lookup a product aggregate for productId: {}", productId);
+            LOG.debug("getCompositeProduct: lookup a product aggregate for productId: {}", productId);
 
-        Product product = integration.getProduct(productId);
-        if (product == null) {
-            throw new NotFoundException("No product found for productId: " + productId);
-        }
+            Product product = integration.getProduct(productId);
+            if (product == null) {
+                throw new NotFoundException("No product found for productId: " + productId);
+            }
 
-        List<Recommendation> recommendations = integration.getRecommendations(productId);
+            List<Recommendation> recommendations = integration.getRecommendations(productId);
 
-        List<Review> reviews = integration.getReviews(productId);
+            List<Review> reviews = integration.getReviews(productId);
 
-        LOG.debug("getCompositeProduct: aggregate entity found for productId: {}", productId);
+            LOG.debug("getCompositeProduct: aggregate entity found for productId: {}", productId);
 
-        return createProductAggregate(product, recommendations, reviews, serviceUtil.getServiceAddress());
+            return createProductAggregate(product, recommendations, reviews, serviceUtil.getServiceAddress());
+        }).thenApply(productAggregate -> {
+            LOG.debug("getCompositeProduct: aggregate entity created for productId: {}", productId);
+            return ResponseEntity.ok(productAggregate);
+        });
     }
 
     @Override
-    public void deleteProduct(int productId) {
+    public CompletableFuture<ResponseEntity<Void>> deleteProduct(int productId) {
+        return CompletableFuture.supplyAsync(() -> {
+            LOG.debug("deleteCompositeProduct: Deletes a product aggregate for productId: {}", productId);
 
-        LOG.debug("deleteCompositeProduct: Deletes a product aggregate for productId: {}", productId);
+            integration.deleteProduct(productId);
 
-        integration.deleteProduct(productId);
+            integration.deleteRecommendations(productId);
 
-        integration.deleteRecommendations(productId);
+            integration.deleteReviews(productId);
 
-        integration.deleteReviews(productId);
-
-        LOG.debug("deleteCompositeProduct: aggregate entities deleted for productId: {}", productId);
+            LOG.debug("deleteCompositeProduct: aggregate entities deleted for productId: {}", productId);
+            return null;
+        }).thenApply(ignored -> ResponseEntity.ok(null));
     }
 
     private ProductAggregate createProductAggregate(
@@ -111,15 +129,15 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
         // 2. Copy summary recommendation info, if available
         List<RecommendationSummary> recommendationSummaries = (recommendations == null) ? null
                 : recommendations.stream()
-                        .map(r -> new RecommendationSummary(r.getRecommendationId(), r.getAuthor(), r.getRate(),
-                                r.getContent()))
-                        .collect(Collectors.toList());
+                .map(r -> new RecommendationSummary(r.getRecommendationId(), r.getAuthor(), r.getRate(),
+                        r.getContent()))
+                .collect(Collectors.toList());
 
         // 3. Copy summary review info, if available
         List<ReviewSummary> reviewSummaries = (reviews == null) ? null
                 : reviews.stream()
-                        .map(r -> new ReviewSummary(r.getReviewId(), r.getAuthor(), r.getSubject(), r.getContent()))
-                        .collect(Collectors.toList());
+                .map(r -> new ReviewSummary(r.getReviewId(), r.getAuthor(), r.getSubject(), r.getContent()))
+                .collect(Collectors.toList());
 
         // 4. Create info regarding the involved microservices addresses
         String productAddress = product.getServiceAddress();

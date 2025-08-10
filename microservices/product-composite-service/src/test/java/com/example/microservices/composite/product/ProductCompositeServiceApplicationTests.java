@@ -14,6 +14,7 @@ import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 
@@ -34,8 +37,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
         webEnvironment = RANDOM_PORT,
         properties = {
                 "spring.profiles.active=test",
-                "spring.main.allow-bean-definition-overriding=true",
-                "eureka.client.enabled=false"}
+                "spring.main.allow-bean-definition-overriding=true"}
 )
 class ProductCompositeServiceApplicationTests {
 
@@ -103,9 +105,11 @@ class ProductCompositeServiceApplicationTests {
     }
 
     @Test
-    void getProductById() throws Exception {
-        mockMvc.perform(get("/product-composite/" + PRODUCT_ID_OK)
-                        .accept(MediaType.APPLICATION_JSON))
+    void getProductById_OK() throws Exception {
+        mockMvc.perform(asyncDispatch(mockMvc.perform(get("/product-composite/" + PRODUCT_ID_OK))
+                        .andExpect(request().asyncStarted())
+                        .andReturn()))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.productId").value(PRODUCT_ID_OK))
@@ -113,10 +117,13 @@ class ProductCompositeServiceApplicationTests {
                 .andExpect(jsonPath("$.reviews.length()").value(1));
     }
 
+
     @Test
     void getProductNotFound() throws Exception {
-        mockMvc.perform(get("/product-composite/" + PRODUCT_ID_NOT_FOUND)
-                        .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(asyncDispatch(mockMvc.perform(get("/product-composite/" + PRODUCT_ID_NOT_FOUND))
+                        .andExpect(request().asyncStarted())
+                        .andReturn()))
+                .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.path").value("/product-composite/" + PRODUCT_ID_NOT_FOUND))
                 .andExpect(jsonPath("$.message").value("NOT FOUND: " + PRODUCT_ID_NOT_FOUND));
@@ -124,11 +131,15 @@ class ProductCompositeServiceApplicationTests {
 
     @Test
     void getProductInvalidInput() throws Exception {
-        mockMvc.perform(get("/product-composite/" + PRODUCT_ID_INVALID)
-                        .accept(MediaType.APPLICATION_JSON))
+
+        mockMvc.perform(asyncDispatch(mockMvc.perform(get("/product-composite/" + PRODUCT_ID_INVALID))
+                        .andExpect(request().asyncStarted())
+                        .andReturn()))
+                .andDo(print())
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.path").value("/product-composite/" + PRODUCT_ID_INVALID))
                 .andExpect(jsonPath("$.message").value("INVALID: " + PRODUCT_ID_INVALID));
+
     }
 
     private void postAndVerifyProduct(ProductAggregate compositeProduct, ResultMatcher expectedStatus) throws Exception {

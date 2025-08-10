@@ -1,9 +1,6 @@
 server:
   port: 8888
 
-app:
-  eureka-server: localhost
-
 spring:
   application:
     name: config
@@ -22,18 +19,6 @@ spring:
           password: ${GIT_TOKEN}
           skip-ssl-validation: false
 
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: "http://${app.eureka-server}:8761/eureka/"
-    initialInstanceInfoReplicationIntervalSeconds: 5
-    registryFetchIntervalSeconds: 5
-  instance:
-    leaseRenewalIntervalInSeconds: 5
-    leaseExpirationDurationInSeconds: 5
-
-
-
 management:
   endpoints:
     web:
@@ -44,9 +29,3 @@ logging:
   level:
     org.springframework.cloud.config: DEBUG
     root: INFO
-
----
-spring.config.activate.on-profile: docker
-
-app:
-  eureka-server: eureka

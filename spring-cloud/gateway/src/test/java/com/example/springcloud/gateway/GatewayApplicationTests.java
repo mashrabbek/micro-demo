@@ -6,7 +6,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
-@SpringBootTest(webEnvironment = RANDOM_PORT, properties = {"eureka.client.enabled=false"})
+@SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
 class GatewayApplicationTests {
     @Test
