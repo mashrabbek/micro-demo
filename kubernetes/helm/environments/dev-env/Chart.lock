@@ -1,0 +1,27 @@
+dependencies:
+- name: common
+  repository: file://../../common
+  version: 1.0.0
+- name: rabbitmq
+  repository: file://../../components/rabbitmq
+  version: 1.0.0
+- name: mongodb
+  repository: file://../../components/mongodb
+  version: 1.0.0
+- name: mysql
+  repository: file://../../components/mysql
+  version: 1.0.0
+- name: product
+  repository: file://../../components/product
+  version: 1.0.0
+- name: recommendation
+  repository: file://../../components/recommendation
+  version: 1.0.0
+- name: review
+  repository: file://../../components/review
+  version: 1.0.0
+- name: product-composite
+  repository: file://../../components/product-composite
+  version: 1.0.0
+digest: sha256:0f7c3e5dac1fa449610ff7bb9ac9644e2296c6cba78b2d9c81875a670d96bb04
+generated: "2025-08-17T12:17:29.55777-04:00"

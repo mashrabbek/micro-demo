@@ -7,7 +7,6 @@ import com.example.api.core.review.Review;
 import com.example.api.exceptions.NotFoundException;
 import com.example.util.http.ServiceUtil;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import org.slf4j.Logger;
@@ -37,14 +36,14 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<Void>> createProduct(ProductAggregate body) {
+    public CompletableFuture<ResponseEntity<Integer>> createProduct(ProductAggregate body) {
         return CompletableFuture.supplyAsync(() -> {
             try {
 
                 LOG.debug("createCompositeProduct: creates a new composite entity for productId: {}", body.getProductId());
 
                 Product product = new Product(body.getProductId(), body.getName(), body.getWeight(), null);
-                integration.createProduct(product);
+                Product createdProduct = integration.createProduct(product);
 
                 if (body.getRecommendations() != null) {
                     body.getRecommendations().forEach(r -> {
@@ -64,12 +63,12 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
 
                 LOG.debug("createCompositeProduct: composite entities created for productId: {}", body.getProductId());
 
-                return null;
+                return createdProduct.getProductId();
             } catch (RuntimeException re) {
                 LOG.warn("createCompositeProduct failed", re);
                 throw re;
             }
-        }).thenApply(ignored -> ResponseEntity.ok(null));
+        }).thenApply(productId -> ResponseEntity.ok(productId));
     }
 
     @Override
@@ -97,6 +96,25 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
             LOG.debug("getCompositeProduct: aggregate entity created for productId: {}", productId);
             return ResponseEntity.ok(productAggregate);
         });
+    }
+
+    private CompletableFuture<ResponseEntity<ProductAggregate>> getProductFallbackValue(int productId, Throwable ex) {
+        LOG.warn("Creating a fail-fast fallback product for productId = {} and exception = {} ",
+                productId, ex.toString());
+
+        if (productId < 1) {
+            throw new NotFoundException("Invalid productId: " + productId);
+        }
+
+        if (productId == 13) {
+            String errMsg = "Product Id: " + productId + " not found in fallback cache!";
+            LOG.warn(errMsg);
+            throw new NotFoundException(errMsg);
+        }
+
+        Product fallbackProduct = new Product(productId, "Fallback product " + productId, productId, serviceUtil.getServiceAddress());
+        ProductAggregate productAggregate = createProductAggregate(fallbackProduct, null, null, serviceUtil.getServiceAddress());
+        return CompletableFuture.completedFuture(ResponseEntity.ok(productAggregate));
     }
 
     @Override

@@ -12,8 +12,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
 @AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = RANDOM_PORT, properties = {
+        "spring.cloud.stream.defaultBinder=rabbit",
+        "logging.level.com.example=DEBUG",
+        "spring.jpa.hibernate.ddl-auto=update"})
 class ReviewServiceApplicationTests extends MySqlTestBase {
 
     @Autowired

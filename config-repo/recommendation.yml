@@ -1,0 +1,40 @@
+server.port: 7002
+server.error.include-message: always
+
+spring.application.name: recommendation
+
+spring.data.mongodb:
+  host: localhost
+  port: 27017
+  database: recommendation-db
+
+management.endpoint.health.group.readiness.include: readinessState, mongo
+
+spring.cloud.function.definition: messageProcessor
+
+spring.cloud.stream:
+  default.contentType: application/json
+
+logging:
+  level:
+    root: INFO
+    com.example: INFO
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+
+---
+spring.config.activate.on-profile: docker
+
+server.port: 80
+
+spring.data.mongodb.host: mongodb
+
+---
+spring.config.activate.on-profile: prod
+
+spring.data.mongodb.host: 172.17.0.1
+
+logging:
+  level:
+    root: WARN
+    com.example: WARN
+    org.springframework.data.mongodb.core.MongoTemplate: WARN

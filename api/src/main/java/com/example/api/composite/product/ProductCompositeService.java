@@ -30,7 +30,7 @@ public interface ProductCompositeService {
     @PostMapping(
             value = "/product-composite",
             consumes = "application/json")
-    CompletableFuture<ResponseEntity<Void>> createProduct(@RequestBody ProductAggregate body);
+    CompletableFuture<ResponseEntity<Integer>> createProduct(@RequestBody ProductAggregate body);
 
     /**
      * Sample usage: "curl $HOST:$PORT/product-composite/1".

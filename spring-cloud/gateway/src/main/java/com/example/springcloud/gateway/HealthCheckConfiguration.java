@@ -26,10 +26,10 @@ public class HealthCheckConfiguration {
     public HealthContributor healthcheckMicroservices() {
         Map<String, HealthIndicator> registry = new LinkedHashMap<>();
 
-        registry.put("product", () -> getHealth("http://product"));
-        registry.put("recommendation", () -> getHealth("http://recommendation"));
-        registry.put("review", () -> getHealth("http://review"));
-        registry.put("product-composite", () -> getHealth("http://product-composite"));
+        registry.put("product", () -> getHealth("http://product:4004"));
+        registry.put("recommendation", () -> getHealth("http://recommendation:4004"));
+        registry.put("review", () -> getHealth("http://review:4004"));
+        registry.put("product-composite", () -> getHealth("http://product-composite:4004"));
 
         return CompositeHealthContributor.fromMap(registry);
     }
