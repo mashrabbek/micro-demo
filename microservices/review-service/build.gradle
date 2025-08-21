@@ -37,6 +37,7 @@ dependencies {
     implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
     implementation 'org.springframework.retry:spring-retry'
     implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot:1.0.0'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 
     implementation "org.projectlombok:lombok:${lombokVersion}"
     compileOnly 'org.projectlombok:lombok'
